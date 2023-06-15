@@ -13,6 +13,9 @@
   tasks:
     - name: Install and configure Webserver
       when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - install
+        - config
       block:
         - name: Install Packages
           ansible.builtin.package:
@@ -44,3 +47,21 @@
         - name: Always do this
           ansible.builtin.debug:
             msg: "Will always run"
+
+
+    - name: Configure firewall
+      ansible.posix.firewalld:
+        zone: public
+        service: http
+        permanent: true
+        state: enabled
+      notify: Firewall reload
+      tags:
+        - firewall
+        - config
+
+  handlers:
+    - name: Firewall reload
+      ansible.builtin.systemd:
+        name: firewalld
+        state: reloaded
